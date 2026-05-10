@@ -12,6 +12,7 @@
   --text: #f5f7fb;
   --accent: #56c2a3;
   --accent-2: #7aa7ff;
+  --accent-3: #f6c85f;
   --danger: #ff6b6b;
   --warning: #f6c85f;
   --radius: 8px;
@@ -25,7 +26,7 @@ body {
   margin: 0;
   background:
     linear-gradient(135deg, rgba(86, 194, 163, 0.12), transparent 28%),
-    radial-gradient(circle at top right, rgba(122, 167, 255, 0.14), transparent 36%),
+    linear-gradient(315deg, rgba(246, 200, 95, 0.08), transparent 30%),
     var(--bg);
 }
 
@@ -52,6 +53,7 @@ button {
   border-right: 1px solid var(--border);
   background: rgba(16, 17, 20, 0.86);
   padding: 22px 18px;
+  overflow: auto;
 }
 
 .brand {
@@ -200,6 +202,66 @@ nav a:hover {
   margin-bottom: 18px;
 }
 
+.workflow {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.workflow-step {
+  display: grid;
+  gap: 8px;
+  min-height: 86px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #111318;
+}
+
+.workflow-step span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.workflow-step strong {
+  align-self: end;
+  font-size: 15px;
+}
+
+.description-grid,
+.structure-grid,
+.extension-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.description-grid > div,
+.structure-item,
+.extension-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-soft);
+  padding: 14px;
+}
+
+.description-grid h4,
+.description-grid p {
+  margin: 0;
+}
+
+.description-grid h4 {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.description-grid p {
+  line-height: 1.6;
+}
+
 .section-title {
   margin-bottom: 16px;
 }
@@ -299,6 +361,56 @@ textarea {
   font-size: 13px;
 }
 
+.tag-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.tag-list span {
+  border: 1px solid #354154;
+  color: #c7d8f2;
+  background: #141924;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 11px;
+}
+
+.structure-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.structure-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.structure-item strong,
+.structure-item span,
+.structure-item p {
+  display: block;
+}
+
+.structure-item strong {
+  font-size: 14px;
+}
+
+.structure-item span {
+  color: var(--accent-3);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.structure-item p,
+.extension-item p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 12px;
+}
+
 .routing-list {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -330,6 +442,31 @@ textarea {
   line-height: 1.5;
   font-size: 12px;
   margin: 8px 0 0;
+}
+
+.extension-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.extension-item > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.extension-item > div span {
+  color: #07130f;
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.extension-item strong {
+  font-size: 15px;
 }
 
 .run-meta {
@@ -452,6 +589,9 @@ code {
   .metric-grid,
   .agent-grid,
   .routing-list,
+  .workflow,
+  .structure-grid,
+  .extension-grid,
   .run-control {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -471,6 +611,10 @@ code {
   .metric-grid,
   .agent-grid,
   .routing-list,
+  .workflow,
+  .description-grid,
+  .structure-grid,
+  .extension-grid,
   .run-control,
   nav {
     grid-template-columns: 1fr;

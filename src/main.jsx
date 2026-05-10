@@ -5,8 +5,12 @@ import {
   Boxes,
   CheckCircle2,
   Code2,
+  Cpu,
+  Eye,
   FileText,
   GitBranch,
+  Layers3,
+  Mic,
   Play,
   RefreshCw,
   Route,
@@ -14,10 +18,12 @@ import {
   Sparkles,
   TerminalSquare,
   TestTube2,
+  Workflow,
 } from "lucide-react";
 import "./styles.css";
 
 const api = {
+  project: () => fetchJson("/api/project"),
   agents: () => fetchJson("/api/agents"),
   metrics: () => fetchJson("/api/metrics"),
   runs: () => fetchJson("/api/runs"),
@@ -54,7 +60,17 @@ const agentIcons = {
   delivery: Boxes,
 };
 
+const extensionIcons = {
+  "screenshot-analysis": Eye,
+  "terminal-recording": TerminalSquare,
+  "voice-requirement": Mic,
+  "mimo-v2-context": Cpu,
+};
+
 function App() {
+  const [project, setProject] = useState(null);
+  const [prototypeStructure, setPrototypeStructure] = useState([]);
+  const [multimodalExtensions, setMultimodalExtensions] = useState([]);
   const [agents, setAgents] = useState([]);
   const [routingPolicy, setRoutingPolicy] = useState([]);
   const [metrics, setMetrics] = useState(null);
@@ -69,7 +85,15 @@ function App() {
   const latestRun = runs[0];
 
   const refresh = async () => {
-    const [agentData, metricData, runData] = await Promise.all([api.agents(), api.metrics(), api.runs()]);
+    const [projectData, agentData, metricData, runData] = await Promise.all([
+      api.project(),
+      api.agents(),
+      api.metrics(),
+      api.runs(),
+    ]);
+    setProject(projectData.project);
+    setPrototypeStructure(projectData.prototypeStructure);
+    setMultimodalExtensions(projectData.multimodalExtensions);
     setAgents(agentData.agents);
     setRoutingPolicy(agentData.routingPolicy);
     setMetrics(metricData);
@@ -109,7 +133,9 @@ function App() {
         </div>
         <nav>
           <a href="#overview">总览</a>
+          <a href="#description">项目描述</a>
           <a href="#agents">多 Agent 架构</a>
+          <a href="#routing">模型路由</a>
           <a href="#runs">运行日志</a>
           <a href="#evidence">证明材料</a>
         </nav>
@@ -119,10 +145,8 @@ function App() {
         <header className="hero" id="overview">
           <div>
             <p className="eyebrow">Claude Code · OpenClaw · OpenCode · GPT-5 · DeepSeek · MiMo</p>
-            <h2>基于多 Agent 协同的 AI 原生全栈开发流水线</h2>
-            <p className="hero-copy">
-              将需求输入、架构设计、编码实现、自动化测试、代码审查、部署交付纳入 AI Agent 自主决策闭环。
-            </p>
+            <h2>{project?.name || "基于多 Agent 协同的 AI 原生全栈开发流水线"}</h2>
+            <p className="hero-copy">{project?.description}</p>
           </div>
           <div className="hero-actions">
             <button className="primary" onClick={startRun} disabled={loading}>
@@ -144,6 +168,35 @@ function App() {
           <Metric label="当前演示 Token" value={formatTokens(totalDemoTokens)} />
         </section>
 
+        <section className="panel" id="description">
+          <div className="section-title">
+            <h3>项目描述</h3>
+            <p>{project?.objective}</p>
+          </div>
+          <div className="workflow">
+            {project?.workflow?.map((stage, index) => (
+              <div className="workflow-step" key={stage}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{stage}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="description-grid">
+            <div>
+              <h4>核心执行引擎</h4>
+              <p>{project?.executionEngine}</p>
+            </div>
+            <div>
+              <h4>编排调度层</h4>
+              <p>{project?.orchestrationLayer}</p>
+            </div>
+            <div>
+              <h4>统一上下文</h4>
+              <p>PipelineContext 贯穿需求、架构、编码、测试、审查与交付阶段。</p>
+            </div>
+          </div>
+        </section>
+
         <section className="panel run-control">
           <div>
             <h3>需求输入</h3>
@@ -155,6 +208,25 @@ function App() {
               <button key={item} className={complexity === item ? "active" : ""} onClick={() => setComplexity(item)}>
                 {item}
               </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="panel">
+          <div className="section-title">
+            <h3>项目原型结构</h3>
+            <p>后端以 BaseAgent 和 PipelineContext 为核心，前端提供 Dashboard、Agent 架构、模型路由、运行日志和证明材料清单。</p>
+          </div>
+          <div className="structure-grid">
+            {prototypeStructure.map((item) => (
+              <article className="structure-item" key={item.name}>
+                <Layers3 size={18} />
+                <div>
+                  <strong>{item.name}</strong>
+                  <span>{item.type}</span>
+                  <p>{item.responsibility}</p>
+                </div>
+              </article>
             ))}
           </div>
         </section>
@@ -177,6 +249,11 @@ function App() {
                     </div>
                   </div>
                   <p>{agent.role}</p>
+                  <div className="tag-list">
+                    {agent.outputs?.map((output) => (
+                      <span key={output}>{output}</span>
+                    ))}
+                  </div>
                   <div className="token-range">
                     {formatTokens(agent.tokenRange[0])} - {formatTokens(agent.tokenRange[1])} tokens
                   </div>
@@ -186,7 +263,7 @@ function App() {
           </div>
         </section>
 
-        <section className="panel">
+        <section className="panel" id="routing">
           <div className="section-title">
             <h3>多模型混合调度策略</h3>
             <p>按复杂度路由模型，兼顾成本、吞吐与推理质量。</p>
@@ -205,11 +282,33 @@ function App() {
           </div>
         </section>
 
+        <section className="panel">
+          <div className="section-title">
+            <h3>多模态扩展接口</h3>
+            <p>当前原型预留截图分析、终端日志解析、语音需求输入和 MiMo-V2.5 长上下文推理接口。</p>
+          </div>
+          <div className="extension-grid">
+            {multimodalExtensions.map((item) => {
+              const Icon = extensionIcons[item.id] || Workflow;
+              return (
+                <article className="extension-item" key={item.id}>
+                  <div>
+                    <Icon size={18} />
+                    <span>{item.status}</span>
+                  </div>
+                  <strong>{item.name}</strong>
+                  <p>{item.capability}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="panel" id="runs">
           <div className="section-title with-action">
             <div>
               <h3>运行日志</h3>
-              <p>用于制作 Agent 工作流截图。以下为 demo 运行日志，不替代真实平台账单。</p>
+              <p>用于制作 Agent 工作流截图。以下为 demo 运行日志，不替代真实平台账单或真实终端运行记录。</p>
             </div>
             <button className="secondary" onClick={refresh}>
               <RefreshCw size={15} />

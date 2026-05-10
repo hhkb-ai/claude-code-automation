@@ -1,6 +1,6 @@
 # Evidence Preparation
 
-This folder contains demo templates and generated logs for project demonstration.
+This folder contains demo templates and generated logs for the multi-agent development pipeline demonstration.
 
 Important:
 
@@ -8,6 +8,8 @@ Important:
 - Demo logs show the shape of Thought -> Action -> Observation loops.
 - Demo logs must not be presented as real billing records or real provider usage.
 - Real submission should include actual platform billing screenshots from Anthropic, OpenAI, DeepSeek, or other providers.
+- Real terminal screenshots should show a complete Agent cycle, including Thought, tool call or shell action, and Observation.
+- API keys, account names, invoice numbers, and billing-sensitive information must be masked before submission.
 
 Recommended screenshot set:
 
@@ -16,3 +18,4 @@ Recommended screenshot set:
 3. Runtime log section showing 3-5 complete Thought -> Action -> Observation rounds.
 4. Real provider billing or usage screenshot with private data masked.
 5. GitHub repository README and source tree.
+6. Terminal workflow screenshot showing a real task executed by Claude Code or another Agent runtime.

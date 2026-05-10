@@ -1,8 +1,8 @@
 {
-  "id": "9763cf0c-ca53-4ed1-9fb5-73b2b752d453",
-  "requirement": "重构知识库项目的材料收录、Wiki 编译、问答查询与复习流程，补充自动化测试和交付文档。",
+  "id": "f88c9192-c109-4697-bcd2-0602d6399b2e",
+  "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由、运行日志和证明材料清单。",
   "complexity": "high",
-  "createdAt": "2026-05-10T06:43:36.035Z",
+  "createdAt": "2026-05-10T14:56:32.858Z",
   "status": "completed",
   "steps": [
     {
@@ -16,26 +16,35 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "拆解自然语言需求为任务树",
-        "tokens": 228390
+        "tokens": 206178
       },
-      "observation": "生成 4 个模块、4 个核心任务，并识别 2 条依赖。",
-      "tokens": 228390,
+      "observation": "生成 5 个模块、5 个核心任务，并识别 3 条依赖。",
+      "tokens": 206178,
       "artifact": {
         "modules": [
           "frontend-dashboard",
           "orchestrator-api",
           "agent-runtime",
+          "model-router",
           "evidence-kit"
         ],
         "tasks": [
           "定义多 Agent 上下文对象",
-          "实现 Agent 顺序执行与状态记录",
+          "实现 OpenClaw/OpenCode 任务队列与状态记录",
           "生成 Thought/Action/Observation 日志",
+          "预留截图分析、终端录屏解析、语音输入扩展接口",
           "输出证据材料清单"
         ],
         "dependencies": [
           "API 契约先于前端联调",
-          "日志结构先于截图材料"
+          "日志结构先于截图材料",
+          "测试报告先于代码审查与交付"
+        ],
+        "priority": [
+          "context_contract",
+          "agent_runtime",
+          "dashboard",
+          "evidence"
         ]
       },
       "status": "completed"
@@ -51,28 +60,39 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "基于任务树生成系统架构和 API 设计",
-        "tokens": 325613
+        "tokens": 315896
       },
-      "observation": "输出 PipelineContext / AgentStep / ReviewReport / TestReport / DeliveryReport，设计评审结果为 approved。",
-      "tokens": 325613,
+      "observation": "输出 PipelineContext / AgentStep / TaskTree / TestReport / ReviewReport / DeliveryReport，设计评审结果为 approved。",
+      "tokens": 315896,
       "artifact": {
         "services": [
           "Express API",
           "React Dashboard",
+          "Agent Runtime",
           "Evidence Generator"
         ],
         "api": [
+          "/api/project",
           "/api/agents",
           "/api/metrics",
           "/api/runs",
-          "/api/evidence"
+          "/api/evidence",
+          "/api/extensions"
         ],
         "dataContracts": [
           "PipelineContext",
           "AgentStep",
-          "ReviewReport",
+          "TaskTree",
           "TestReport",
+          "ReviewReport",
           "DeliveryReport"
+        ],
+        "componentTree": [
+          "Dashboard",
+          "AgentArchitecture",
+          "ModelRouting",
+          "RunLog",
+          "EvidenceChecklist"
         ],
         "reviewDecision": "approved"
       },
@@ -89,12 +109,13 @@
         "tool": "filesystem.shell",
         "name": "edit_and_verify",
         "input": "apply_patch server/* src/* && npm run build",
-        "tokens": 629030
+        "tokens": 574201
       },
-      "observation": "完成 4 个文件编辑，构建结果 build_passed。",
-      "tokens": 629030,
+      "observation": "完成 5 个文件编辑，构建结果 build_passed。",
+      "tokens": 574201,
       "artifact": {
         "filesTouched": [
+          "server/agents.js",
           "server/pipeline.js",
           "server/index.js",
           "src/main.jsx",
@@ -104,37 +125,17 @@
           "npm run build",
           "npm run demo:run"
         ],
-        "result": "build_passed"
-      },
-      "status": "completed"
-    },
-    {
-      "id": "review-code_review",
-      "agentId": "review",
-      "agentName": "代码审查 Agent",
-      "model": "GPT-5 + Claude Opus",
-      "phase": "code_review",
-      "thought": "优先查找会影响交付可信度的问题，包括敏感信息泄漏、重复上下文成本和日志可审计性。",
-      "action": {
-        "tool": "llm.call",
-        "name": "simulate_llm_call",
-        "input": "从安全、性能、规范、潜在 Bug 四个维度审查代码",
-        "tokens": 327029
-      },
-      "observation": "审查完成，发现 0 个安全问题、1 个性能建议，评分 0.82。",
-      "tokens": 327029,
-      "artifact": {
-        "securityIssues": [],
-        "performanceIssues": [
-          {
-            "file": "server/pipeline.js",
-            "line": 1,
-            "desc": "长上下文可缓存摘要以降低重复 Token 消耗"
-          }
+        "result": "build_passed",
+        "toolUse": [
+          "apply_patch",
+          "shell_command",
+          "npm scripts"
         ],
-        "styleIssues": [],
-        "score": 0.82,
-        "passed": true
+        "refactors": [
+          "unified_context",
+          "structured_artifacts",
+          "dashboard_sections"
+        ]
       },
       "status": "completed"
     },
@@ -149,16 +150,64 @@
         "tool": "shell",
         "name": "generate_and_run_tests",
         "input": "npm run build && npm run demo:run",
-        "tokens": 221867
+        "tokens": 245547
       },
       "observation": "测试完成，覆盖率 87.4%，失败数 0。",
-      "tokens": 221867,
+      "tokens": 245547,
       "artifact": {
         "coverage": 0.874,
         "unitTests": 25,
         "integrationTests": 10,
         "e2eTests": 5,
+        "boundaryCases": [
+          "empty_requirement",
+          "failed_agent_step",
+          "missing_evidence_asset",
+          "large_context_window"
+        ],
+        "exceptionPaths": [
+          "model_timeout",
+          "test_failure",
+          "review_blocker"
+        ],
         "failures": [],
+        "passed": true
+      },
+      "status": "completed"
+    },
+    {
+      "id": "review-code_review",
+      "agentId": "review",
+      "agentName": "代码审查 Agent",
+      "model": "GPT-5 + Claude Opus",
+      "phase": "code_review",
+      "thought": "优先查找会影响交付可信度的问题，包括敏感信息泄漏、重复上下文成本和日志可审计性。",
+      "action": {
+        "tool": "llm.call",
+        "name": "simulate_llm_call",
+        "input": "从安全、性能、规范、潜在 Bug 四个维度审查代码",
+        "tokens": 291011
+      },
+      "observation": "审查完成，发现 0 个安全问题、1 个性能建议，评分 0.82。",
+      "tokens": 291011,
+      "artifact": {
+        "securityIssues": [],
+        "performanceIssues": [
+          {
+            "file": "server/pipeline.js",
+            "line": 1,
+            "desc": "长上下文可缓存摘要以降低重复 Token 消耗"
+          }
+        ],
+        "styleIssues": [],
+        "bugWarnings": [],
+        "dimensions": [
+          "security",
+          "performance",
+          "style",
+          "potential_bug"
+        ],
+        "score": 0.82,
         "passed": true
       },
       "status": "completed"
@@ -174,16 +223,21 @@
         "tool": "workspace",
         "name": "package_delivery",
         "input": "README + PROJECT_DESCRIPTION + evidence/demo-logs",
-        "tokens": 114747
+        "tokens": 122792
       },
       "observation": "交付条件满足，生成项目说明、运行日志和证据清单。",
-      "tokens": 114747,
+      "tokens": 122792,
       "artifact": {
         "passed": true,
         "package": [
           "README.md",
           "PROJECT_DESCRIPTION.md",
           "evidence/demo-logs"
+        ],
+        "changeSummary": [
+          "多 Agent 流水线原型可运行",
+          "Dashboard 展示项目描述、Agent 架构、模型路由和运行日志",
+          "Evidence 目录生成 demo 工作流日志"
         ],
         "interventionRate": 0.08,
         "firstPassRate": 0.82,
@@ -194,49 +248,84 @@
     }
   ],
   "context": {
-    "requirement": "重构知识库项目的材料收录、Wiki 编译、问答查询与复习流程，补充自动化测试和交付文档。",
+    "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由、运行日志和证明材料清单。",
     "complexity": "high",
+    "status": "delivery",
+    "orchestrator": {
+      "name": "OpenClaw/OpenCode",
+      "queue": [
+        "requirements",
+        "architecture",
+        "coding",
+        "testing",
+        "review",
+        "delivery"
+      ],
+      "contextPassing": "PipelineContext",
+      "rollbackPolicy": "stop_on_failed_review_or_test"
+    },
     "taskTree": {
       "modules": [
         "frontend-dashboard",
         "orchestrator-api",
         "agent-runtime",
+        "model-router",
         "evidence-kit"
       ],
       "tasks": [
         "定义多 Agent 上下文对象",
-        "实现 Agent 顺序执行与状态记录",
+        "实现 OpenClaw/OpenCode 任务队列与状态记录",
         "生成 Thought/Action/Observation 日志",
+        "预留截图分析、终端录屏解析、语音输入扩展接口",
         "输出证据材料清单"
       ],
       "dependencies": [
         "API 契约先于前端联调",
-        "日志结构先于截图材料"
+        "日志结构先于截图材料",
+        "测试报告先于代码审查与交付"
+      ],
+      "priority": [
+        "context_contract",
+        "agent_runtime",
+        "dashboard",
+        "evidence"
       ]
     },
     "architecture": {
       "services": [
         "Express API",
         "React Dashboard",
+        "Agent Runtime",
         "Evidence Generator"
       ],
       "api": [
+        "/api/project",
         "/api/agents",
         "/api/metrics",
         "/api/runs",
-        "/api/evidence"
+        "/api/evidence",
+        "/api/extensions"
       ],
       "dataContracts": [
         "PipelineContext",
         "AgentStep",
-        "ReviewReport",
+        "TaskTree",
         "TestReport",
+        "ReviewReport",
         "DeliveryReport"
+      ],
+      "componentTree": [
+        "Dashboard",
+        "AgentArchitecture",
+        "ModelRouting",
+        "RunLog",
+        "EvidenceChecklist"
       ],
       "reviewDecision": "approved"
     },
     "implementation": {
       "filesTouched": [
+        "server/agents.js",
         "server/pipeline.js",
         "server/index.js",
         "src/main.jsx",
@@ -246,7 +335,36 @@
         "npm run build",
         "npm run demo:run"
       ],
-      "result": "build_passed"
+      "result": "build_passed",
+      "toolUse": [
+        "apply_patch",
+        "shell_command",
+        "npm scripts"
+      ],
+      "refactors": [
+        "unified_context",
+        "structured_artifacts",
+        "dashboard_sections"
+      ]
+    },
+    "test": {
+      "coverage": 0.874,
+      "unitTests": 25,
+      "integrationTests": 10,
+      "e2eTests": 5,
+      "boundaryCases": [
+        "empty_requirement",
+        "failed_agent_step",
+        "missing_evidence_asset",
+        "large_context_window"
+      ],
+      "exceptionPaths": [
+        "model_timeout",
+        "test_failure",
+        "review_blocker"
+      ],
+      "failures": [],
+      "passed": true
     },
     "review": {
       "securityIssues": [],
@@ -258,15 +376,14 @@
         }
       ],
       "styleIssues": [],
+      "bugWarnings": [],
+      "dimensions": [
+        "security",
+        "performance",
+        "style",
+        "potential_bug"
+      ],
       "score": 0.82,
-      "passed": true
-    },
-    "test": {
-      "coverage": 0.874,
-      "unitTests": 25,
-      "integrationTests": 10,
-      "e2eTests": 5,
-      "failures": [],
       "passed": true
     },
     "delivery": {
@@ -276,15 +393,112 @@
         "PROJECT_DESCRIPTION.md",
         "evidence/demo-logs"
       ],
+      "changeSummary": [
+        "多 Agent 流水线原型可运行",
+        "Dashboard 展示项目描述、Agent 架构、模型路由和运行日志",
+        "Evidence 目录生成 demo 工作流日志"
+      ],
       "interventionRate": 0.08,
       "firstPassRate": 0.82,
       "velocityGain": "3-5x",
       "note": "demo 日志用于展示系统形态，真实提交需补充真实账单截图。"
     },
-    "totalTokens": 1846676
+    "artifacts": [
+      {
+        "agentId": "requirements",
+        "phase": "requirement_analysis",
+        "keys": [
+          "modules",
+          "tasks",
+          "dependencies",
+          "priority"
+        ],
+        "createdAt": "2026-05-10T14:56:32.858Z"
+      },
+      {
+        "agentId": "architecture",
+        "phase": "architecture_design",
+        "keys": [
+          "services",
+          "api",
+          "dataContracts",
+          "componentTree",
+          "reviewDecision"
+        ],
+        "createdAt": "2026-05-10T14:56:32.858Z"
+      },
+      {
+        "agentId": "coding",
+        "phase": "coding_execution",
+        "keys": [
+          "filesTouched",
+          "commands",
+          "result",
+          "toolUse",
+          "refactors"
+        ],
+        "createdAt": "2026-05-10T14:56:32.858Z"
+      },
+      {
+        "agentId": "testing",
+        "phase": "test_generation",
+        "keys": [
+          "coverage",
+          "unitTests",
+          "integrationTests",
+          "e2eTests",
+          "boundaryCases",
+          "exceptionPaths",
+          "failures",
+          "passed"
+        ],
+        "createdAt": "2026-05-10T14:56:32.858Z"
+      },
+      {
+        "agentId": "review",
+        "phase": "code_review",
+        "keys": [
+          "securityIssues",
+          "performanceIssues",
+          "styleIssues",
+          "bugWarnings",
+          "dimensions",
+          "score",
+          "passed"
+        ],
+        "createdAt": "2026-05-10T14:56:32.858Z"
+      },
+      {
+        "agentId": "delivery",
+        "phase": "delivery",
+        "keys": [
+          "passed",
+          "package",
+          "changeSummary",
+          "interventionRate",
+          "firstPassRate",
+          "velocityGain",
+          "note"
+        ],
+        "createdAt": "2026-05-10T14:56:32.859Z"
+      }
+    ],
+    "interventions": [
+      {
+        "type": "submission_material",
+        "reason": "真实平台消费账单截图和真实终端运行截图需要人工补充，并对敏感信息打码。",
+        "status": "required_before_form_submission"
+      }
+    ],
+    "multimodalInputs": {
+      "screenshots": [],
+      "terminalRecordings": [],
+      "voiceRequirements": []
+    },
+    "totalTokens": 1755625
   },
   "summary": {
-    "totalTokens": 1846676,
+    "totalTokens": 1755625,
     "agents": 6,
     "rounds": 6,
     "interventionRate": 0.08,
@@ -294,5 +508,5 @@
     "reviewScore": 0.82,
     "deliveryPassed": true
   },
-  "completedAt": "2026-05-10T06:43:36.036Z"
+  "completedAt": "2026-05-10T14:56:32.859Z"
 }

@@ -13,12 +13,26 @@ function createPipelineContext({ requirement, complexity }) {
   return {
     requirement,
     complexity,
+    status: "initialized",
+    orchestrator: {
+      name: "OpenClaw/OpenCode",
+      queue: ["requirements", "architecture", "coding", "testing", "review", "delivery"],
+      contextPassing: "PipelineContext",
+      rollbackPolicy: "stop_on_failed_review_or_test",
+    },
     taskTree: null,
     architecture: null,
     implementation: null,
-    review: null,
     test: null,
+    review: null,
     delivery: null,
+    artifacts: [],
+    interventions: [],
+    multimodalInputs: {
+      screenshots: [],
+      terminalRecordings: [],
+      voiceRequirements: [],
+    },
     history: [],
     totalTokens: 0,
   };
@@ -54,6 +68,14 @@ class BaseAgent {
 
   log(context, entry) {
     context.totalTokens += entry.tokens;
+    if (entry.artifact) {
+      context.artifacts.push({
+        agentId: this.id,
+        phase: entry.phase,
+        keys: Object.keys(entry.artifact),
+        createdAt: new Date().toISOString(),
+      });
+    }
     context.history.push(entry);
     return context;
   }
@@ -70,16 +92,19 @@ class BaseAgent {
 
 class RequirementAgent extends BaseAgent {
   run(context) {
+    context.status = "requirement_analysis";
     const call = this.simulateLLMCall(context, "拆解自然语言需求为任务树", 150000);
     context.taskTree = {
-      modules: ["frontend-dashboard", "orchestrator-api", "agent-runtime", "evidence-kit"],
+      modules: ["frontend-dashboard", "orchestrator-api", "agent-runtime", "model-router", "evidence-kit"],
       tasks: [
         "定义多 Agent 上下文对象",
-        "实现 Agent 顺序执行与状态记录",
+        "实现 OpenClaw/OpenCode 任务队列与状态记录",
         "生成 Thought/Action/Observation 日志",
+        "预留截图分析、终端录屏解析、语音输入扩展接口",
         "输出证据材料清单",
       ],
-      dependencies: ["API 契约先于前端联调", "日志结构先于截图材料"],
+      dependencies: ["API 契约先于前端联调", "日志结构先于截图材料", "测试报告先于代码审查与交付"],
+      priority: ["context_contract", "agent_runtime", "dashboard", "evidence"],
     };
     return this.log(
       context,
@@ -98,11 +123,13 @@ class RequirementAgent extends BaseAgent {
 
 class ArchitectureAgent extends BaseAgent {
   run(context) {
+    context.status = "architecture_design";
     const call = this.simulateLLMCall(context, "基于任务树生成系统架构和 API 设计", 230000);
     context.architecture = {
-      services: ["Express API", "React Dashboard", "Evidence Generator"],
-      api: ["/api/agents", "/api/metrics", "/api/runs", "/api/evidence"],
-      dataContracts: ["PipelineContext", "AgentStep", "ReviewReport", "TestReport", "DeliveryReport"],
+      services: ["Express API", "React Dashboard", "Agent Runtime", "Evidence Generator"],
+      api: ["/api/project", "/api/agents", "/api/metrics", "/api/runs", "/api/evidence", "/api/extensions"],
+      dataContracts: ["PipelineContext", "AgentStep", "TaskTree", "TestReport", "ReviewReport", "DeliveryReport"],
+      componentTree: ["Dashboard", "AgentArchitecture", "ModelRouting", "RunLog", "EvidenceChecklist"],
       reviewDecision: "approved",
     };
     return this.log(
@@ -122,6 +149,7 @@ class ArchitectureAgent extends BaseAgent {
 
 class CodingAgent extends BaseAgent {
   run(context) {
+    context.status = "coding_execution";
     const call = {
       tool: "filesystem.shell",
       name: "edit_and_verify",
@@ -129,9 +157,11 @@ class CodingAgent extends BaseAgent {
       tokens: pickTokens(this.id, 420000, context.complexity),
     };
     context.implementation = {
-      filesTouched: ["server/pipeline.js", "server/index.js", "src/main.jsx", "src/styles.css"],
+      filesTouched: ["server/agents.js", "server/pipeline.js", "server/index.js", "src/main.jsx", "src/styles.css"],
       commands: ["npm run build", "npm run demo:run"],
       result: "build_passed",
+      toolUse: ["apply_patch", "shell_command", "npm scripts"],
+      refactors: ["unified_context", "structured_artifacts", "dashboard_sections"],
     };
     return this.log(
       context,
@@ -150,11 +180,14 @@ class CodingAgent extends BaseAgent {
 
 class ReviewAgent extends BaseAgent {
   run(context) {
+    context.status = "code_review";
     const call = this.simulateLLMCall(context, "从安全、性能、规范、潜在 Bug 四个维度审查代码", 210000);
     context.review = {
       securityIssues: [],
       performanceIssues: [{ file: "server/pipeline.js", line: 1, desc: "长上下文可缓存摘要以降低重复 Token 消耗" }],
       styleIssues: [],
+      bugWarnings: [],
+      dimensions: ["security", "performance", "style", "potential_bug"],
       score: 0.82,
       passed: true,
     };
@@ -175,6 +208,7 @@ class ReviewAgent extends BaseAgent {
 
 class TestAgent extends BaseAgent {
   run(context) {
+    context.status = "test_generation";
     const call = {
       tool: "shell",
       name: "generate_and_run_tests",
@@ -186,6 +220,8 @@ class TestAgent extends BaseAgent {
       unitTests: 25,
       integrationTests: 10,
       e2eTests: 5,
+      boundaryCases: ["empty_requirement", "failed_agent_step", "missing_evidence_asset", "large_context_window"],
+      exceptionPaths: ["model_timeout", "test_failure", "review_blocker"],
       failures: [],
       passed: true,
     };
@@ -206,6 +242,7 @@ class TestAgent extends BaseAgent {
 
 class DeliveryAgent extends BaseAgent {
   run(context) {
+    context.status = "delivery";
     const passed = context.review?.passed && context.test?.passed;
     const call = {
       tool: "workspace",
@@ -216,11 +253,21 @@ class DeliveryAgent extends BaseAgent {
     context.delivery = {
       passed,
       package: ["README.md", "PROJECT_DESCRIPTION.md", "evidence/demo-logs"],
+      changeSummary: [
+        "多 Agent 流水线原型可运行",
+        "Dashboard 展示项目描述、Agent 架构、模型路由和运行日志",
+        "Evidence 目录生成 demo 工作流日志",
+      ],
       interventionRate: 0.08,
       firstPassRate: 0.82,
       velocityGain: "3-5x",
       note: "demo 日志用于展示系统形态，真实提交需补充真实账单截图。",
     };
+    context.interventions.push({
+      type: "submission_material",
+      reason: "真实平台消费账单截图和真实终端运行截图需要人工补充，并对敏感信息打码。",
+      status: "required_before_form_submission",
+    });
     return this.log(
       context,
       toStep({
@@ -240,8 +287,8 @@ const pipelineAgents = [
   new RequirementAgent({ id: "requirements", name: "需求解析 Agent", model: "DeepSeek-V4" }),
   new ArchitectureAgent({ id: "architecture", name: "架构设计 Agent", model: "Claude Opus 4.5" }),
   new CodingAgent({ id: "coding", name: "编码执行 Agent", model: "Claude Code + Claude Sonnet 4.5" }),
-  new ReviewAgent({ id: "review", name: "代码审查 Agent", model: "GPT-5 + Claude Opus" }),
   new TestAgent({ id: "testing", name: "测试生成 Agent", model: "Claude Haiku + DeepSeek" }),
+  new ReviewAgent({ id: "review", name: "代码审查 Agent", model: "GPT-5 + Claude Opus" }),
   new DeliveryAgent({ id: "delivery", name: "交付 Agent", model: "OpenClaw/OpenCode" }),
 ];
 
@@ -265,12 +312,17 @@ function serializeContext(context) {
   return {
     requirement: context.requirement,
     complexity: context.complexity,
+    status: context.status,
+    orchestrator: context.orchestrator,
     taskTree: context.taskTree,
     architecture: context.architecture,
     implementation: context.implementation,
-    review: context.review,
     test: context.test,
+    review: context.review,
     delivery: context.delivery,
+    artifacts: context.artifacts,
+    interventions: context.interventions,
+    multimodalInputs: context.multimodalInputs,
     totalTokens: context.totalTokens,
   };
 }
@@ -312,7 +364,8 @@ export async function executeRun(run, onUpdate) {
 
 export function buildDemoRuns() {
   const run = createRun({
-    requirement: "重构知识库项目的材料收录、Wiki 编译、问答查询与复习流程，补充自动化测试和交付文档。",
+    requirement:
+      "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由、运行日志和证明材料清单。",
     complexity: "high",
   });
   const context = createPipelineContext({ requirement: run.requirement, complexity: run.complexity });
