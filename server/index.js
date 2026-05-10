@@ -1,6 +1,13 @@
 import express from "express";
 import cors from "cors";
-import { agentCatalog, multimodalExtensions, projectOverview, prototypeStructure, routingPolicy } from "./agents.js";
+import {
+  agentCatalog,
+  multimodalExtensions,
+  parallelCollaboration,
+  projectOverview,
+  prototypeStructure,
+  routingPolicy,
+} from "./agents.js";
 import { buildDemoRuns, createRun, executeRun } from "./pipeline.js";
 
 const app = express();
@@ -23,11 +30,12 @@ app.get("/api/project", (_req, res) => {
     project: projectOverview,
     prototypeStructure,
     multimodalExtensions,
+    parallelCollaboration,
   });
 });
 
 app.get("/api/agents", (_req, res) => {
-  res.json({ agents: agentCatalog, routingPolicy, prototypeStructure });
+  res.json({ agents: agentCatalog, routingPolicy, prototypeStructure, parallelCollaboration });
 });
 
 app.get("/api/metrics", (_req, res) => {

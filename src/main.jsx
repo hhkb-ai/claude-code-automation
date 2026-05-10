@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
@@ -11,6 +11,7 @@ import {
   GitBranch,
   Layers3,
   Mic,
+  Network,
   Play,
   RefreshCw,
   Route,
@@ -71,6 +72,7 @@ function App() {
   const [project, setProject] = useState(null);
   const [prototypeStructure, setPrototypeStructure] = useState([]);
   const [multimodalExtensions, setMultimodalExtensions] = useState([]);
+  const [parallelCollaboration, setParallelCollaboration] = useState(null);
   const [agents, setAgents] = useState([]);
   const [routingPolicy, setRoutingPolicy] = useState([]);
   const [metrics, setMetrics] = useState(null);
@@ -94,6 +96,7 @@ function App() {
     setProject(projectData.project);
     setPrototypeStructure(projectData.prototypeStructure);
     setMultimodalExtensions(projectData.multimodalExtensions);
+    setParallelCollaboration(projectData.parallelCollaboration);
     setAgents(agentData.agents);
     setRoutingPolicy(agentData.routingPolicy);
     setMetrics(metricData);
@@ -105,8 +108,6 @@ function App() {
     const timer = setInterval(() => refresh().catch(() => {}), 1200);
     return () => clearInterval(timer);
   }, []);
-
-  const totalDemoTokens = useMemo(() => latestRun?.summary?.totalTokens ?? 0, [latestRun]);
 
   const startRun = async () => {
     setLoading(true);
@@ -134,6 +135,7 @@ function App() {
         <nav>
           <a href="#overview">总览</a>
           <a href="#description">项目描述</a>
+          <a href="#parallel">并行协作</a>
           <a href="#agents">多 Agent 架构</a>
           <a href="#routing">模型路由</a>
           <a href="#runs">运行日志</a>
@@ -163,8 +165,8 @@ function App() {
           <Metric label="月均 Token" value="25亿" />
           <Metric label="人工介入率" value="40% → 8%" />
           <Metric label="一次通过率" value="55% → 82%" />
+          <Metric label="并行泳道" value={latestRun?.summary?.parallelLanes || parallelCollaboration?.lanes?.length || "-"} />
           <Metric label="效率提升" value="3-5x" />
-          <Metric label="当前演示 Token" value={formatTokens(totalDemoTokens)} />
         </section>
 
         <section className="panel" id="description">
@@ -228,6 +230,62 @@ function App() {
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="panel" id="parallel">
+          <div className="section-title">
+            <h3>多 AI 并行协作</h3>
+            <p>{parallelCollaboration?.summary}</p>
+          </div>
+          <div className="parallel-policy">
+            <div>
+              <span>Max Active Agents</span>
+              <strong>{parallelCollaboration?.concurrencyPolicy?.maxActiveAgents}</strong>
+            </div>
+            <div>
+              <span>Scheduling</span>
+              <strong>{parallelCollaboration?.concurrencyPolicy?.scheduling}</strong>
+            </div>
+            <div>
+              <span>Merge Strategy</span>
+              <strong>{parallelCollaboration?.concurrencyPolicy?.mergeStrategy}</strong>
+            </div>
+            <div>
+              <span>Conflict Policy</span>
+              <strong>{parallelCollaboration?.concurrencyPolicy?.conflictPolicy}</strong>
+            </div>
+          </div>
+          <div className="lane-grid">
+            {parallelCollaboration?.lanes?.map((lane) => (
+              <article className="lane-card" key={lane.id}>
+                <div className="lane-head">
+                  <Network size={18} />
+                  <div>
+                    <h4>{lane.name}</h4>
+                    <span>{lane.model}</span>
+                  </div>
+                </div>
+                <p>{lane.scope}</p>
+                <div className="lane-meta">
+                  <b>Owner</b>
+                  <span>{lane.owner}</span>
+                </div>
+                <div className="lane-meta">
+                  <b>WriteSet</b>
+                  <code>{lane.writeSet.join(", ")}</code>
+                </div>
+                <div className="lane-meta">
+                  <b>Depends</b>
+                  <span>{lane.dependencies.length ? lane.dependencies.join(", ") : "none"}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+          <ul className="guardrail-list">
+            {parallelCollaboration?.guardrails?.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </section>
 
         <section className="panel" id="agents">

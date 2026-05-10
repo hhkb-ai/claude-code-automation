@@ -1,8 +1,8 @@
 {
-  "id": "589a8ab1-2c29-4b4e-980b-7acb69eece5a",
-  "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由和运行日志。",
+  "id": "8cbd470a-8dcb-4c22-993d-5dcb25795514",
+  "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示同一项目下多 AI 并行协作、Agent 架构、模型路由和运行日志。",
   "complexity": "high",
-  "createdAt": "2026-05-10T15:05:11.795Z",
+  "createdAt": "2026-05-10T15:16:00.447Z",
   "status": "completed",
   "steps": [
     {
@@ -16,10 +16,10 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "拆解自然语言需求为任务树",
-        "tokens": 227482
+        "tokens": 202062
       },
-      "observation": "生成 5 个模块、5 个核心任务，并识别 3 条依赖。",
-      "tokens": 227482,
+      "observation": "生成 5 个模块、6 个核心任务，并识别 3 条依赖。",
+      "tokens": 202062,
       "artifact": {
         "modules": [
           "frontend-dashboard",
@@ -31,20 +31,72 @@
         "tasks": [
           "定义多 Agent 上下文对象",
           "实现 OpenClaw/OpenCode 任务队列与状态记录",
+          "拆分同项目并行开发泳道与文件所有权",
           "生成 Thought/Action/Observation 日志",
           "预留截图分析、终端录屏解析、语音输入扩展接口",
           "输出 demo 运行日志"
         ],
         "dependencies": [
           "API 契约先于前端联调",
-          "日志结构先于截图材料",
+          "并行 writeSet 先于代码编辑",
           "测试报告先于代码审查与交付"
         ],
         "priority": [
           "context_contract",
+          "parallel_lanes",
           "agent_runtime",
           "dashboard",
-          "evidence"
+          "demo_logs"
+        ],
+        "parallelLanes": [
+          {
+            "id": "frontend-lane",
+            "owner": "Coding Agent",
+            "writeSet": [
+              "src/main.jsx",
+              "src/styles.css"
+            ],
+            "dependencies": [
+              "api-contract-lane"
+            ]
+          },
+          {
+            "id": "api-contract-lane",
+            "owner": "Architecture Agent",
+            "writeSet": [
+              "server/agents.js",
+              "server/pipeline.js",
+              "server/index.js"
+            ],
+            "dependencies": [
+              "requirement-lane"
+            ]
+          },
+          {
+            "id": "test-lane",
+            "owner": "Test Agent",
+            "writeSet": [
+              "tests/**",
+              "evidence/demo-logs/**"
+            ],
+            "dependencies": [
+              "frontend-lane",
+              "api-contract-lane"
+            ]
+          },
+          {
+            "id": "review-lane",
+            "owner": "Review Agent",
+            "writeSet": [
+              "review-report",
+              "merge-decision"
+            ],
+            "dependencies": [
+              "frontend-lane",
+              "api-contract-lane",
+              "test-lane"
+            ]
+          }
         ]
       },
       "status": "completed"
@@ -60,10 +112,10 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "基于任务树生成系统架构和 API 设计",
-        "tokens": 326657
+        "tokens": 312661
       },
-      "observation": "输出 PipelineContext / AgentStep / TaskTree / TestReport / ReviewReport / DeliveryReport，设计评审结果为 approved。",
-      "tokens": 326657,
+      "observation": "输出 PipelineContext / AgentStep / ParallelLane / TaskTree / TestReport / ReviewReport / DeliveryReport，设计评审结果为 approved。",
+      "tokens": 312661,
       "artifact": {
         "services": [
           "Express API",
@@ -82,6 +134,7 @@
         "dataContracts": [
           "PipelineContext",
           "AgentStep",
+          "ParallelLane",
           "TaskTree",
           "TestReport",
           "ReviewReport",
@@ -89,11 +142,16 @@
         ],
         "componentTree": [
           "Dashboard",
+          "ParallelCollaboration",
           "AgentArchitecture",
           "ModelRouting",
-          "RunLog",
-          "EvidenceChecklist"
+          "RunLog"
         ],
+        "parallelPlan": {
+          "maxActiveAgents": 5,
+          "conflictPolicy": "pause_conflicting_lane_and_route_to_review_agent",
+          "mergeStrategy": "owner_first_patch_merge"
+        },
         "reviewDecision": "approved"
       },
       "status": "completed"
@@ -109,10 +167,10 @@
         "tool": "filesystem.shell",
         "name": "edit_and_verify",
         "input": "apply_patch server/* src/* && npm run build",
-        "tokens": 607694
+        "tokens": 597709
       },
       "observation": "完成 5 个文件编辑，构建结果 build_passed。",
-      "tokens": 607694,
+      "tokens": 597709,
       "artifact": {
         "filesTouched": [
           "server/agents.js",
@@ -134,7 +192,43 @@
         "refactors": [
           "unified_context",
           "structured_artifacts",
+          "parallel_lanes",
           "dashboard_sections"
+        ],
+        "ownership": [
+          {
+            "laneId": "frontend-lane",
+            "owner": "Coding Agent",
+            "writeSet": [
+              "src/main.jsx",
+              "src/styles.css"
+            ]
+          },
+          {
+            "laneId": "api-contract-lane",
+            "owner": "Architecture Agent",
+            "writeSet": [
+              "server/agents.js",
+              "server/pipeline.js",
+              "server/index.js"
+            ]
+          },
+          {
+            "laneId": "test-lane",
+            "owner": "Test Agent",
+            "writeSet": [
+              "tests/**",
+              "evidence/demo-logs/**"
+            ]
+          },
+          {
+            "laneId": "review-lane",
+            "owner": "Review Agent",
+            "writeSet": [
+              "review-report",
+              "merge-decision"
+            ]
+          }
         ]
       },
       "status": "completed"
@@ -150,10 +244,10 @@
         "tool": "shell",
         "name": "generate_and_run_tests",
         "input": "npm run build && npm run demo:run",
-        "tokens": 236148
+        "tokens": 231474
       },
       "observation": "测试完成，覆盖率 87.4%，失败数 0。",
-      "tokens": 236148,
+      "tokens": 231474,
       "artifact": {
         "coverage": 0.874,
         "unitTests": 25,
@@ -162,13 +256,36 @@
         "boundaryCases": [
           "empty_requirement",
           "failed_agent_step",
-          "missing_evidence_asset",
+          "write_set_conflict",
           "large_context_window"
         ],
         "exceptionPaths": [
           "model_timeout",
           "test_failure",
-          "review_blocker"
+          "review_blocker",
+          "parallel_lane_conflict"
+        ],
+        "laneChecks": [
+          {
+            "laneId": "frontend-lane",
+            "writeSetLocked": true,
+            "dependencyReady": "checked"
+          },
+          {
+            "laneId": "api-contract-lane",
+            "writeSetLocked": true,
+            "dependencyReady": "checked"
+          },
+          {
+            "laneId": "test-lane",
+            "writeSetLocked": true,
+            "dependencyReady": "checked"
+          },
+          {
+            "laneId": "review-lane",
+            "writeSetLocked": true,
+            "dependencyReady": "checked"
+          }
         ],
         "failures": [],
         "passed": true
@@ -186,10 +303,10 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "从安全、性能、规范、潜在 Bug 四个维度审查代码",
-        "tokens": 325171
+        "tokens": 298790
       },
       "observation": "审查完成，发现 0 个安全问题、1 个性能建议，评分 0.82。",
-      "tokens": 325171,
+      "tokens": 298790,
       "artifact": {
         "securityIssues": [],
         "performanceIssues": [
@@ -201,6 +318,8 @@
         ],
         "styleIssues": [],
         "bugWarnings": [],
+        "mergeConflicts": [],
+        "ownershipViolations": [],
         "dimensions": [
           "security",
           "performance",
@@ -223,10 +342,10 @@
         "tool": "workspace",
         "name": "package_delivery",
         "input": "README + PROJECT_DESCRIPTION + evidence/demo-logs",
-        "tokens": 109774
+        "tokens": 116902
       },
       "observation": "交付条件满足，生成项目说明和 demo 运行日志。",
-      "tokens": 109774,
+      "tokens": 116902,
       "artifact": {
         "passed": true,
         "package": [
@@ -236,9 +355,15 @@
         ],
         "changeSummary": [
           "多 Agent 流水线原型可运行",
-          "Dashboard 展示项目描述、Agent 架构、模型路由和运行日志",
+          "Dashboard 展示项目描述、并行协作机制、Agent 架构、模型路由和运行日志",
           "Evidence 目录生成 demo 工作流日志"
         ],
+        "parallelSummary": {
+          "activeLanes": 4,
+          "mergedLanes": 2,
+          "conflicts": 0,
+          "guardrails": 5
+        },
         "interventionRate": 0.08,
         "firstPassRate": 0.82,
         "velocityGain": "3-5x",
@@ -248,7 +373,7 @@
     }
   ],
   "context": {
-    "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由和运行日志。",
+    "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示同一项目下多 AI 并行协作、Agent 架构、模型路由和运行日志。",
     "complexity": "high",
     "status": "delivery",
     "orchestrator": {
@@ -264,6 +389,124 @@
       "contextPassing": "PipelineContext",
       "rollbackPolicy": "stop_on_failed_review_or_test"
     },
+    "parallelCollaboration": {
+      "title": "多 AI 同项目并行协作机制",
+      "summary": "同一个项目会先被拆分为互不冲突的任务泳道，再由多个模型/Agent 同时处理；编排层通过文件所有权、共享上下文、合并门禁和冲突处理策略保证并行产出可以收敛为一次可交付变更。",
+      "concurrencyPolicy": {
+        "maxActiveAgents": 5,
+        "scheduling": "dependency_aware_parallel_lanes",
+        "contextSync": "shared_pipeline_context_with_artifact_index",
+        "mergeStrategy": "owner_first_patch_merge",
+        "conflictPolicy": "pause_conflicting_lane_and_route_to_review_agent"
+      },
+      "lanes": [
+        {
+          "id": "frontend-lane",
+          "name": "前端实现泳道",
+          "owner": "Coding Agent",
+          "model": "Claude Code + Claude Sonnet 4.5",
+          "scope": "Dashboard 页面、组件状态、交互和响应式样式",
+          "writeSet": [
+            "src/main.jsx",
+            "src/styles.css"
+          ],
+          "dependencies": [
+            "api-contract-lane"
+          ],
+          "handoff": "提交 UI Artifact、组件状态和构建结果"
+        },
+        {
+          "id": "api-contract-lane",
+          "name": "后端契约泳道",
+          "owner": "Architecture Agent",
+          "model": "Claude Opus 4.5",
+          "scope": "PipelineContext、REST API、数据契约和编排状态",
+          "writeSet": [
+            "server/agents.js",
+            "server/pipeline.js",
+            "server/index.js"
+          ],
+          "dependencies": [
+            "requirement-lane"
+          ],
+          "handoff": "输出 API Contract、Context Schema 和变更边界"
+        },
+        {
+          "id": "test-lane",
+          "name": "测试生成泳道",
+          "owner": "Test Agent",
+          "model": "Claude Haiku + DeepSeek",
+          "scope": "单元测试、集成测试、端到端用例和边界路径",
+          "writeSet": [
+            "tests/**",
+            "evidence/demo-logs/**"
+          ],
+          "dependencies": [
+            "frontend-lane",
+            "api-contract-lane"
+          ],
+          "handoff": "输出 Coverage Report、失败路径和回归风险"
+        },
+        {
+          "id": "review-lane",
+          "name": "交叉审查泳道",
+          "owner": "Review Agent",
+          "model": "GPT-5 + Claude Opus",
+          "scope": "安全、性能、规范、潜在 Bug 与冲突合并审查",
+          "writeSet": [
+            "review-report",
+            "merge-decision"
+          ],
+          "dependencies": [
+            "frontend-lane",
+            "api-contract-lane",
+            "test-lane"
+          ],
+          "handoff": "输出 Review Report、Merge Decision 和修复建议"
+        }
+      ],
+      "guardrails": [
+        "每个 Agent 在开始前声明 writeSet，编排层阻止两个 Agent 同时写同一文件。",
+        "共享上下文只通过 PipelineContext 和 Artifact 索引传递，避免复制不一致的局部结论。",
+        "依赖完成前允许只读探索，不允许提前改写下游文件。",
+        "合并前必须通过 build、demo run、测试摘要和审查评分四个质量门禁。",
+        "出现冲突时冻结冲突泳道，由 Review Agent 生成 owner-first 合并决策。"
+      ],
+      "activeLanes": [
+        {
+          "id": "frontend-lane",
+          "owner": "Coding Agent",
+          "status": "completed",
+          "writeSet": [
+            "src/main.jsx",
+            "src/styles.css"
+          ]
+        },
+        {
+          "id": "api-contract-lane",
+          "owner": "Architecture Agent",
+          "status": "completed",
+          "writeSet": [
+            "server/agents.js",
+            "server/pipeline.js",
+            "server/index.js"
+          ]
+        }
+      ],
+      "mergeQueue": [
+        {
+          "laneId": "api-contract-lane",
+          "status": "merged",
+          "decision": "contract_first"
+        },
+        {
+          "laneId": "frontend-lane",
+          "status": "merged",
+          "decision": "owner_write_set_clean"
+        }
+      ],
+      "conflictLog": []
+    },
     "taskTree": {
       "modules": [
         "frontend-dashboard",
@@ -275,20 +518,72 @@
       "tasks": [
         "定义多 Agent 上下文对象",
         "实现 OpenClaw/OpenCode 任务队列与状态记录",
+        "拆分同项目并行开发泳道与文件所有权",
         "生成 Thought/Action/Observation 日志",
         "预留截图分析、终端录屏解析、语音输入扩展接口",
         "输出 demo 运行日志"
       ],
       "dependencies": [
         "API 契约先于前端联调",
-        "日志结构先于截图材料",
+        "并行 writeSet 先于代码编辑",
         "测试报告先于代码审查与交付"
       ],
       "priority": [
         "context_contract",
+        "parallel_lanes",
         "agent_runtime",
         "dashboard",
-        "evidence"
+        "demo_logs"
+      ],
+      "parallelLanes": [
+        {
+          "id": "frontend-lane",
+          "owner": "Coding Agent",
+          "writeSet": [
+            "src/main.jsx",
+            "src/styles.css"
+          ],
+          "dependencies": [
+            "api-contract-lane"
+          ]
+        },
+        {
+          "id": "api-contract-lane",
+          "owner": "Architecture Agent",
+          "writeSet": [
+            "server/agents.js",
+            "server/pipeline.js",
+            "server/index.js"
+          ],
+          "dependencies": [
+            "requirement-lane"
+          ]
+        },
+        {
+          "id": "test-lane",
+          "owner": "Test Agent",
+          "writeSet": [
+            "tests/**",
+            "evidence/demo-logs/**"
+          ],
+          "dependencies": [
+            "frontend-lane",
+            "api-contract-lane"
+          ]
+        },
+        {
+          "id": "review-lane",
+          "owner": "Review Agent",
+          "writeSet": [
+            "review-report",
+            "merge-decision"
+          ],
+          "dependencies": [
+            "frontend-lane",
+            "api-contract-lane",
+            "test-lane"
+          ]
+        }
       ]
     },
     "architecture": {
@@ -309,6 +604,7 @@
       "dataContracts": [
         "PipelineContext",
         "AgentStep",
+        "ParallelLane",
         "TaskTree",
         "TestReport",
         "ReviewReport",
@@ -316,11 +612,16 @@
       ],
       "componentTree": [
         "Dashboard",
+        "ParallelCollaboration",
         "AgentArchitecture",
         "ModelRouting",
-        "RunLog",
-        "EvidenceChecklist"
+        "RunLog"
       ],
+      "parallelPlan": {
+        "maxActiveAgents": 5,
+        "conflictPolicy": "pause_conflicting_lane_and_route_to_review_agent",
+        "mergeStrategy": "owner_first_patch_merge"
+      },
       "reviewDecision": "approved"
     },
     "implementation": {
@@ -344,7 +645,43 @@
       "refactors": [
         "unified_context",
         "structured_artifacts",
+        "parallel_lanes",
         "dashboard_sections"
+      ],
+      "ownership": [
+        {
+          "laneId": "frontend-lane",
+          "owner": "Coding Agent",
+          "writeSet": [
+            "src/main.jsx",
+            "src/styles.css"
+          ]
+        },
+        {
+          "laneId": "api-contract-lane",
+          "owner": "Architecture Agent",
+          "writeSet": [
+            "server/agents.js",
+            "server/pipeline.js",
+            "server/index.js"
+          ]
+        },
+        {
+          "laneId": "test-lane",
+          "owner": "Test Agent",
+          "writeSet": [
+            "tests/**",
+            "evidence/demo-logs/**"
+          ]
+        },
+        {
+          "laneId": "review-lane",
+          "owner": "Review Agent",
+          "writeSet": [
+            "review-report",
+            "merge-decision"
+          ]
+        }
       ]
     },
     "test": {
@@ -355,13 +692,36 @@
       "boundaryCases": [
         "empty_requirement",
         "failed_agent_step",
-        "missing_evidence_asset",
+        "write_set_conflict",
         "large_context_window"
       ],
       "exceptionPaths": [
         "model_timeout",
         "test_failure",
-        "review_blocker"
+        "review_blocker",
+        "parallel_lane_conflict"
+      ],
+      "laneChecks": [
+        {
+          "laneId": "frontend-lane",
+          "writeSetLocked": true,
+          "dependencyReady": "checked"
+        },
+        {
+          "laneId": "api-contract-lane",
+          "writeSetLocked": true,
+          "dependencyReady": "checked"
+        },
+        {
+          "laneId": "test-lane",
+          "writeSetLocked": true,
+          "dependencyReady": "checked"
+        },
+        {
+          "laneId": "review-lane",
+          "writeSetLocked": true,
+          "dependencyReady": "checked"
+        }
       ],
       "failures": [],
       "passed": true
@@ -377,6 +737,8 @@
       ],
       "styleIssues": [],
       "bugWarnings": [],
+      "mergeConflicts": [],
+      "ownershipViolations": [],
       "dimensions": [
         "security",
         "performance",
@@ -395,9 +757,15 @@
       ],
       "changeSummary": [
         "多 Agent 流水线原型可运行",
-        "Dashboard 展示项目描述、Agent 架构、模型路由和运行日志",
+        "Dashboard 展示项目描述、并行协作机制、Agent 架构、模型路由和运行日志",
         "Evidence 目录生成 demo 工作流日志"
       ],
+      "parallelSummary": {
+        "activeLanes": 4,
+        "mergedLanes": 2,
+        "conflicts": 0,
+        "guardrails": 5
+      },
       "interventionRate": 0.08,
       "firstPassRate": 0.82,
       "velocityGain": "3-5x",
@@ -411,9 +779,10 @@
           "modules",
           "tasks",
           "dependencies",
-          "priority"
+          "priority",
+          "parallelLanes"
         ],
-        "createdAt": "2026-05-10T15:05:11.796Z"
+        "createdAt": "2026-05-10T15:16:00.448Z"
       },
       {
         "agentId": "architecture",
@@ -423,9 +792,10 @@
           "api",
           "dataContracts",
           "componentTree",
+          "parallelPlan",
           "reviewDecision"
         ],
-        "createdAt": "2026-05-10T15:05:11.796Z"
+        "createdAt": "2026-05-10T15:16:00.448Z"
       },
       {
         "agentId": "coding",
@@ -435,9 +805,10 @@
           "commands",
           "result",
           "toolUse",
-          "refactors"
+          "refactors",
+          "ownership"
         ],
-        "createdAt": "2026-05-10T15:05:11.796Z"
+        "createdAt": "2026-05-10T15:16:00.448Z"
       },
       {
         "agentId": "testing",
@@ -449,10 +820,11 @@
           "e2eTests",
           "boundaryCases",
           "exceptionPaths",
+          "laneChecks",
           "failures",
           "passed"
         ],
-        "createdAt": "2026-05-10T15:05:11.796Z"
+        "createdAt": "2026-05-10T15:16:00.448Z"
       },
       {
         "agentId": "review",
@@ -462,11 +834,13 @@
           "performanceIssues",
           "styleIssues",
           "bugWarnings",
+          "mergeConflicts",
+          "ownershipViolations",
           "dimensions",
           "score",
           "passed"
         ],
-        "createdAt": "2026-05-10T15:05:11.796Z"
+        "createdAt": "2026-05-10T15:16:00.448Z"
       },
       {
         "agentId": "delivery",
@@ -475,12 +849,13 @@
           "passed",
           "package",
           "changeSummary",
+          "parallelSummary",
           "interventionRate",
           "firstPassRate",
           "velocityGain",
           "note"
         ],
-        "createdAt": "2026-05-10T15:05:11.796Z"
+        "createdAt": "2026-05-10T15:16:00.448Z"
       }
     ],
     "interventions": [],
@@ -489,12 +864,14 @@
       "terminalRecordings": [],
       "voiceRequirements": []
     },
-    "totalTokens": 1832926
+    "totalTokens": 1759598
   },
   "summary": {
-    "totalTokens": 1832926,
+    "totalTokens": 1759598,
     "agents": 6,
     "rounds": 6,
+    "parallelLanes": 4,
+    "mergeConflicts": 0,
     "interventionRate": 0.08,
     "firstPassRate": 0.82,
     "coverage": 0.874,
@@ -502,5 +879,5 @@
     "reviewScore": 0.82,
     "deliveryPassed": true
   },
-  "completedAt": "2026-05-10T15:05:11.796Z"
+  "completedAt": "2026-05-10T15:16:00.448Z"
 }

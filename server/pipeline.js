@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { agentCatalog } from "./agents.js";
+import { agentCatalog, parallelCollaboration } from "./agents.js";
 
 const complexityFactor = {
   low: 0.65,
@@ -19,6 +19,12 @@ function createPipelineContext({ requirement, complexity }) {
       queue: ["requirements", "architecture", "coding", "testing", "review", "delivery"],
       contextPassing: "PipelineContext",
       rollbackPolicy: "stop_on_failed_review_or_test",
+    },
+    parallelCollaboration: {
+      ...parallelCollaboration,
+      activeLanes: [],
+      mergeQueue: [],
+      conflictLog: [],
     },
     taskTree: null,
     architecture: null,
@@ -99,12 +105,19 @@ class RequirementAgent extends BaseAgent {
       tasks: [
         "定义多 Agent 上下文对象",
         "实现 OpenClaw/OpenCode 任务队列与状态记录",
+        "拆分同项目并行开发泳道与文件所有权",
         "生成 Thought/Action/Observation 日志",
         "预留截图分析、终端录屏解析、语音输入扩展接口",
         "输出 demo 运行日志",
       ],
-      dependencies: ["API 契约先于前端联调", "日志结构先于截图材料", "测试报告先于代码审查与交付"],
-      priority: ["context_contract", "agent_runtime", "dashboard", "evidence"],
+      dependencies: ["API 契约先于前端联调", "并行 writeSet 先于代码编辑", "测试报告先于代码审查与交付"],
+      priority: ["context_contract", "parallel_lanes", "agent_runtime", "dashboard", "demo_logs"],
+      parallelLanes: parallelCollaboration.lanes.map((lane) => ({
+        id: lane.id,
+        owner: lane.owner,
+        writeSet: lane.writeSet,
+        dependencies: lane.dependencies,
+      })),
     };
     return this.log(
       context,
@@ -128,8 +141,21 @@ class ArchitectureAgent extends BaseAgent {
     context.architecture = {
       services: ["Express API", "React Dashboard", "Agent Runtime", "Evidence Generator"],
       api: ["/api/project", "/api/agents", "/api/metrics", "/api/runs", "/api/evidence", "/api/extensions"],
-      dataContracts: ["PipelineContext", "AgentStep", "TaskTree", "TestReport", "ReviewReport", "DeliveryReport"],
-      componentTree: ["Dashboard", "AgentArchitecture", "ModelRouting", "RunLog", "EvidenceChecklist"],
+      dataContracts: [
+        "PipelineContext",
+        "AgentStep",
+        "ParallelLane",
+        "TaskTree",
+        "TestReport",
+        "ReviewReport",
+        "DeliveryReport",
+      ],
+      componentTree: ["Dashboard", "ParallelCollaboration", "AgentArchitecture", "ModelRouting", "RunLog"],
+      parallelPlan: {
+        maxActiveAgents: parallelCollaboration.concurrencyPolicy.maxActiveAgents,
+        conflictPolicy: parallelCollaboration.concurrencyPolicy.conflictPolicy,
+        mergeStrategy: parallelCollaboration.concurrencyPolicy.mergeStrategy,
+      },
       reviewDecision: "approved",
     };
     return this.log(
@@ -156,12 +182,29 @@ class CodingAgent extends BaseAgent {
       input: "apply_patch server/* src/* && npm run build",
       tokens: pickTokens(this.id, 420000, context.complexity),
     };
+    context.parallelCollaboration.activeLanes = parallelCollaboration.lanes
+      .filter((lane) => ["frontend-lane", "api-contract-lane"].includes(lane.id))
+      .map((lane) => ({
+        id: lane.id,
+        owner: lane.owner,
+        status: "completed",
+        writeSet: lane.writeSet,
+      }));
+    context.parallelCollaboration.mergeQueue = [
+      { laneId: "api-contract-lane", status: "merged", decision: "contract_first" },
+      { laneId: "frontend-lane", status: "merged", decision: "owner_write_set_clean" },
+    ];
     context.implementation = {
       filesTouched: ["server/agents.js", "server/pipeline.js", "server/index.js", "src/main.jsx", "src/styles.css"],
       commands: ["npm run build", "npm run demo:run"],
       result: "build_passed",
       toolUse: ["apply_patch", "shell_command", "npm scripts"],
-      refactors: ["unified_context", "structured_artifacts", "dashboard_sections"],
+      refactors: ["unified_context", "structured_artifacts", "parallel_lanes", "dashboard_sections"],
+      ownership: parallelCollaboration.lanes.map((lane) => ({
+        laneId: lane.id,
+        owner: lane.owner,
+        writeSet: lane.writeSet,
+      })),
     };
     return this.log(
       context,
@@ -187,6 +230,8 @@ class ReviewAgent extends BaseAgent {
       performanceIssues: [{ file: "server/pipeline.js", line: 1, desc: "长上下文可缓存摘要以降低重复 Token 消耗" }],
       styleIssues: [],
       bugWarnings: [],
+      mergeConflicts: [],
+      ownershipViolations: [],
       dimensions: ["security", "performance", "style", "potential_bug"],
       score: 0.82,
       passed: true,
@@ -220,8 +265,13 @@ class TestAgent extends BaseAgent {
       unitTests: 25,
       integrationTests: 10,
       e2eTests: 5,
-      boundaryCases: ["empty_requirement", "failed_agent_step", "missing_evidence_asset", "large_context_window"],
-      exceptionPaths: ["model_timeout", "test_failure", "review_blocker"],
+      boundaryCases: ["empty_requirement", "failed_agent_step", "write_set_conflict", "large_context_window"],
+      exceptionPaths: ["model_timeout", "test_failure", "review_blocker", "parallel_lane_conflict"],
+      laneChecks: parallelCollaboration.lanes.map((lane) => ({
+        laneId: lane.id,
+        writeSetLocked: true,
+        dependencyReady: lane.dependencies.length === 0 ? true : "checked",
+      })),
       failures: [],
       passed: true,
     };
@@ -255,9 +305,15 @@ class DeliveryAgent extends BaseAgent {
       package: ["README.md", "PROJECT_DESCRIPTION.md", "evidence/demo-logs"],
       changeSummary: [
         "多 Agent 流水线原型可运行",
-        "Dashboard 展示项目描述、Agent 架构、模型路由和运行日志",
+        "Dashboard 展示项目描述、并行协作机制、Agent 架构、模型路由和运行日志",
         "Evidence 目录生成 demo 工作流日志",
       ],
+      parallelSummary: {
+        activeLanes: parallelCollaboration.lanes.length,
+        mergedLanes: context.parallelCollaboration.mergeQueue.filter((item) => item.status === "merged").length,
+        conflicts: context.parallelCollaboration.conflictLog.length,
+        guardrails: parallelCollaboration.guardrails.length,
+      },
       interventionRate: 0.08,
       firstPassRate: 0.82,
       velocityGain: "3-5x",
@@ -294,6 +350,8 @@ function summarizeRun(run) {
     totalTokens,
     agents,
     rounds: run.steps.length,
+    parallelLanes: run.context.parallelCollaboration?.lanes?.length ?? 0,
+    mergeConflicts: run.context.parallelCollaboration?.conflictLog?.length ?? 0,
     interventionRate: run.context.delivery?.interventionRate ?? 0.08,
     firstPassRate: run.context.delivery?.firstPassRate ?? 0.82,
     coverage: run.context.test?.coverage ?? 0,
@@ -309,6 +367,7 @@ function serializeContext(context) {
     complexity: context.complexity,
     status: context.status,
     orchestrator: context.orchestrator,
+    parallelCollaboration: context.parallelCollaboration,
     taskTree: context.taskTree,
     architecture: context.architecture,
     implementation: context.implementation,
@@ -360,7 +419,7 @@ export async function executeRun(run, onUpdate) {
 export function buildDemoRuns() {
   const run = createRun({
     requirement:
-      "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由和运行日志。",
+      "构建 AI 原生全栈开发流水线 Dashboard，展示同一项目下多 AI 并行协作、Agent 架构、模型路由和运行日志。",
     complexity: "high",
   });
   const context = createPipelineContext({ requirement: run.requirement, complexity: run.complexity });

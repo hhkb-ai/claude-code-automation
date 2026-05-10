@@ -32,9 +32,23 @@ lines.push("## Summary");
 lines.push(`Total Tokens: ${run.summary.totalTokens}`);
 lines.push(`Agents: ${run.summary.agents}`);
 lines.push(`Rounds: ${run.summary.rounds}`);
+lines.push(`Parallel Lanes: ${run.summary.parallelLanes}`);
+lines.push(`Merge Conflicts: ${run.summary.mergeConflicts}`);
 lines.push(`Coverage: ${(run.summary.coverage * 100).toFixed(1)}%`);
 lines.push(`First Pass Rate: ${(run.summary.firstPassRate * 100).toFixed(0)}%`);
 lines.push(`Intervention Rate: ${(run.summary.interventionRate * 100).toFixed(0)}%`);
+lines.push("");
+lines.push("## Parallel Collaboration");
+lines.push(`Policy: ${run.context.parallelCollaboration.concurrencyPolicy.scheduling}`);
+lines.push(`Max Active Agents: ${run.context.parallelCollaboration.concurrencyPolicy.maxActiveAgents}`);
+for (const lane of run.context.parallelCollaboration.lanes) {
+  lines.push(`- ${lane.name}: ${lane.owner} owns ${lane.writeSet.join(", ")}`);
+}
+lines.push("");
+lines.push("## Guardrails");
+for (const guardrail of run.context.parallelCollaboration.guardrails) {
+  lines.push(`- ${guardrail}`);
+}
 lines.push("");
 lines.push("## PipelineContext Artifacts");
 for (const artifact of run.context.artifacts) {

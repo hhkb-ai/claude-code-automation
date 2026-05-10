@@ -9,6 +9,68 @@ export const projectOverview = {
     "本项目构建了一套以 Claude Code 为核心执行引擎、OpenClaw/OpenCode 为编排调度层的 AI 原生全栈开发流水线，将需求输入、架构设计、编码实现、自动化测试、代码审查、部署交付纳入多 Agent 自主协同闭环。",
 };
 
+export const parallelCollaboration = {
+  title: "多 AI 同项目并行协作机制",
+  summary:
+    "同一个项目会先被拆分为互不冲突的任务泳道，再由多个模型/Agent 同时处理；编排层通过文件所有权、共享上下文、合并门禁和冲突处理策略保证并行产出可以收敛为一次可交付变更。",
+  concurrencyPolicy: {
+    maxActiveAgents: 5,
+    scheduling: "dependency_aware_parallel_lanes",
+    contextSync: "shared_pipeline_context_with_artifact_index",
+    mergeStrategy: "owner_first_patch_merge",
+    conflictPolicy: "pause_conflicting_lane_and_route_to_review_agent",
+  },
+  lanes: [
+    {
+      id: "frontend-lane",
+      name: "前端实现泳道",
+      owner: "Coding Agent",
+      model: "Claude Code + Claude Sonnet 4.5",
+      scope: "Dashboard 页面、组件状态、交互和响应式样式",
+      writeSet: ["src/main.jsx", "src/styles.css"],
+      dependencies: ["api-contract-lane"],
+      handoff: "提交 UI Artifact、组件状态和构建结果",
+    },
+    {
+      id: "api-contract-lane",
+      name: "后端契约泳道",
+      owner: "Architecture Agent",
+      model: "Claude Opus 4.5",
+      scope: "PipelineContext、REST API、数据契约和编排状态",
+      writeSet: ["server/agents.js", "server/pipeline.js", "server/index.js"],
+      dependencies: ["requirement-lane"],
+      handoff: "输出 API Contract、Context Schema 和变更边界",
+    },
+    {
+      id: "test-lane",
+      name: "测试生成泳道",
+      owner: "Test Agent",
+      model: "Claude Haiku + DeepSeek",
+      scope: "单元测试、集成测试、端到端用例和边界路径",
+      writeSet: ["tests/**", "evidence/demo-logs/**"],
+      dependencies: ["frontend-lane", "api-contract-lane"],
+      handoff: "输出 Coverage Report、失败路径和回归风险",
+    },
+    {
+      id: "review-lane",
+      name: "交叉审查泳道",
+      owner: "Review Agent",
+      model: "GPT-5 + Claude Opus",
+      scope: "安全、性能、规范、潜在 Bug 与冲突合并审查",
+      writeSet: ["review-report", "merge-decision"],
+      dependencies: ["frontend-lane", "api-contract-lane", "test-lane"],
+      handoff: "输出 Review Report、Merge Decision 和修复建议",
+    },
+  ],
+  guardrails: [
+    "每个 Agent 在开始前声明 writeSet，编排层阻止两个 Agent 同时写同一文件。",
+    "共享上下文只通过 PipelineContext 和 Artifact 索引传递，避免复制不一致的局部结论。",
+    "依赖完成前允许只读探索，不允许提前改写下游文件。",
+    "合并前必须通过 build、demo run、测试摘要和审查评分四个质量门禁。",
+    "出现冲突时冻结冲突泳道，由 Review Agent 生成 owner-first 合并决策。",
+  ],
+};
+
 export const prototypeStructure = [
   {
     name: "BaseAgent",
@@ -23,7 +85,7 @@ export const prototypeStructure = [
   {
     name: "Orchestration Runtime",
     type: "OpenClaw/OpenCode layer",
-    responsibility: "负责队列管理、上下文传递、执行状态监控、异常回滚与人工介入点记录。",
+    responsibility: "负责队列管理、并行泳道调度、上下文传递、执行状态监控、异常回滚与冲突处理。",
   },
   {
     name: "Demo Log Kit",
