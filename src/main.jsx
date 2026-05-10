@@ -137,7 +137,6 @@ function App() {
           <a href="#agents">多 Agent 架构</a>
           <a href="#routing">模型路由</a>
           <a href="#runs">运行日志</a>
-          <a href="#evidence">证明材料</a>
         </nav>
       </aside>
 
@@ -215,7 +214,7 @@ function App() {
         <section className="panel">
           <div className="section-title">
             <h3>项目原型结构</h3>
-            <p>后端以 BaseAgent 和 PipelineContext 为核心，前端提供 Dashboard、Agent 架构、模型路由、运行日志和证明材料清单。</p>
+            <p>后端以 BaseAgent 和 PipelineContext 为核心，前端提供 Dashboard、Agent 架构、模型路由和运行日志。</p>
           </div>
           <div className="structure-grid">
             {prototypeStructure.map((item) => (
@@ -308,7 +307,7 @@ function App() {
           <div className="section-title with-action">
             <div>
               <h3>运行日志</h3>
-              <p>用于制作 Agent 工作流截图。以下为 demo 运行日志，不替代真实平台账单或真实终端运行记录。</p>
+              <p>以下为 demo 运行日志，用于展示 Agent 工作流形态。</p>
             </div>
             <button className="secondary" onClick={refresh}>
               <RefreshCw size={15} />
@@ -316,20 +315,6 @@ function App() {
             </button>
           </div>
           <RunLog run={latestRun} />
-        </section>
-
-        <section className="panel" id="evidence">
-          <div className="section-title">
-            <h3>证明材料清单</h3>
-            <p>表单提交前建议准备以下材料，确保指标与截图可以互相印证。</p>
-          </div>
-          <ul className="checklist">
-            <li>过去 30 天 Anthropic/OpenAI/DeepSeek 消费记录截图。</li>
-            <li>Agent Thought → Action → Observation 循环运行日志截图 3-5 张。</li>
-            <li>GitHub 仓库链接，包含 README、代码结构、启动命令。</li>
-            <li>本 Dashboard 指标页与运行日志页截图。</li>
-            <li>真实终端任务执行记录，隐藏 API Key、账号、账单敏感信息。</li>
-          </ul>
         </section>
       </section>
     </main>

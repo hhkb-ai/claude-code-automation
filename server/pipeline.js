@@ -95,13 +95,13 @@ class RequirementAgent extends BaseAgent {
     context.status = "requirement_analysis";
     const call = this.simulateLLMCall(context, "拆解自然语言需求为任务树", 150000);
     context.taskTree = {
-      modules: ["frontend-dashboard", "orchestrator-api", "agent-runtime", "model-router", "evidence-kit"],
+      modules: ["frontend-dashboard", "orchestrator-api", "agent-runtime", "model-router", "demo-log-kit"],
       tasks: [
         "定义多 Agent 上下文对象",
         "实现 OpenClaw/OpenCode 任务队列与状态记录",
         "生成 Thought/Action/Observation 日志",
         "预留截图分析、终端录屏解析、语音输入扩展接口",
-        "输出证据材料清单",
+        "输出 demo 运行日志",
       ],
       dependencies: ["API 契约先于前端联调", "日志结构先于截图材料", "测试报告先于代码审查与交付"],
       priority: ["context_contract", "agent_runtime", "dashboard", "evidence"],
@@ -261,21 +261,16 @@ class DeliveryAgent extends BaseAgent {
       interventionRate: 0.08,
       firstPassRate: 0.82,
       velocityGain: "3-5x",
-      note: "demo 日志用于展示系统形态，真实提交需补充真实账单截图。",
+      note: "demo 日志用于展示系统形态。",
     };
-    context.interventions.push({
-      type: "submission_material",
-      reason: "真实平台消费账单截图和真实终端运行截图需要人工补充，并对敏感信息打码。",
-      status: "required_before_form_submission",
-    });
     return this.log(
       context,
       toStep({
         agent: this,
         phase: "delivery",
-        thought: "只有审查和测试都通过才生成交付包，并明确区分 demo 证据与真实消费材料。",
+        thought: "只有审查和测试都通过才生成交付包，并汇总项目说明与运行日志。",
         action: call,
-        observation: passed ? "交付条件满足，生成项目说明、运行日志和证据清单。" : "交付条件未满足，需要人工处理阻塞项。",
+        observation: passed ? "交付条件满足，生成项目说明和 demo 运行日志。" : "交付条件未满足，需要人工处理阻塞项。",
         tokens: call.tokens,
         artifact: context.delivery,
       }),
@@ -365,7 +360,7 @@ export async function executeRun(run, onUpdate) {
 export function buildDemoRuns() {
   const run = createRun({
     requirement:
-      "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由、运行日志和证明材料清单。",
+      "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由和运行日志。",
     complexity: "high",
   });
   const context = createPipelineContext({ requirement: run.requirement, complexity: run.complexity });

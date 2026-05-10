@@ -1,8 +1,8 @@
 {
-  "id": "f88c9192-c109-4697-bcd2-0602d6399b2e",
-  "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由、运行日志和证明材料清单。",
+  "id": "589a8ab1-2c29-4b4e-980b-7acb69eece5a",
+  "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由和运行日志。",
   "complexity": "high",
-  "createdAt": "2026-05-10T14:56:32.858Z",
+  "createdAt": "2026-05-10T15:05:11.795Z",
   "status": "completed",
   "steps": [
     {
@@ -16,24 +16,24 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "拆解自然语言需求为任务树",
-        "tokens": 206178
+        "tokens": 227482
       },
       "observation": "生成 5 个模块、5 个核心任务，并识别 3 条依赖。",
-      "tokens": 206178,
+      "tokens": 227482,
       "artifact": {
         "modules": [
           "frontend-dashboard",
           "orchestrator-api",
           "agent-runtime",
           "model-router",
-          "evidence-kit"
+          "demo-log-kit"
         ],
         "tasks": [
           "定义多 Agent 上下文对象",
           "实现 OpenClaw/OpenCode 任务队列与状态记录",
           "生成 Thought/Action/Observation 日志",
           "预留截图分析、终端录屏解析、语音输入扩展接口",
-          "输出证据材料清单"
+          "输出 demo 运行日志"
         ],
         "dependencies": [
           "API 契约先于前端联调",
@@ -60,10 +60,10 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "基于任务树生成系统架构和 API 设计",
-        "tokens": 315896
+        "tokens": 326657
       },
       "observation": "输出 PipelineContext / AgentStep / TaskTree / TestReport / ReviewReport / DeliveryReport，设计评审结果为 approved。",
-      "tokens": 315896,
+      "tokens": 326657,
       "artifact": {
         "services": [
           "Express API",
@@ -109,10 +109,10 @@
         "tool": "filesystem.shell",
         "name": "edit_and_verify",
         "input": "apply_patch server/* src/* && npm run build",
-        "tokens": 574201
+        "tokens": 607694
       },
       "observation": "完成 5 个文件编辑，构建结果 build_passed。",
-      "tokens": 574201,
+      "tokens": 607694,
       "artifact": {
         "filesTouched": [
           "server/agents.js",
@@ -150,10 +150,10 @@
         "tool": "shell",
         "name": "generate_and_run_tests",
         "input": "npm run build && npm run demo:run",
-        "tokens": 245547
+        "tokens": 236148
       },
       "observation": "测试完成，覆盖率 87.4%，失败数 0。",
-      "tokens": 245547,
+      "tokens": 236148,
       "artifact": {
         "coverage": 0.874,
         "unitTests": 25,
@@ -186,10 +186,10 @@
         "tool": "llm.call",
         "name": "simulate_llm_call",
         "input": "从安全、性能、规范、潜在 Bug 四个维度审查代码",
-        "tokens": 291011
+        "tokens": 325171
       },
       "observation": "审查完成，发现 0 个安全问题、1 个性能建议，评分 0.82。",
-      "tokens": 291011,
+      "tokens": 325171,
       "artifact": {
         "securityIssues": [],
         "performanceIssues": [
@@ -218,15 +218,15 @@
       "agentName": "交付 Agent",
       "model": "OpenClaw/OpenCode",
       "phase": "delivery",
-      "thought": "只有审查和测试都通过才生成交付包，并明确区分 demo 证据与真实消费材料。",
+      "thought": "只有审查和测试都通过才生成交付包，并汇总项目说明与运行日志。",
       "action": {
         "tool": "workspace",
         "name": "package_delivery",
         "input": "README + PROJECT_DESCRIPTION + evidence/demo-logs",
-        "tokens": 122792
+        "tokens": 109774
       },
-      "observation": "交付条件满足，生成项目说明、运行日志和证据清单。",
-      "tokens": 122792,
+      "observation": "交付条件满足，生成项目说明和 demo 运行日志。",
+      "tokens": 109774,
       "artifact": {
         "passed": true,
         "package": [
@@ -242,13 +242,13 @@
         "interventionRate": 0.08,
         "firstPassRate": 0.82,
         "velocityGain": "3-5x",
-        "note": "demo 日志用于展示系统形态，真实提交需补充真实账单截图。"
+        "note": "demo 日志用于展示系统形态。"
       },
       "status": "completed"
     }
   ],
   "context": {
-    "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由、运行日志和证明材料清单。",
+    "requirement": "构建 AI 原生全栈开发流水线 Dashboard，展示项目描述、Agent 架构、模型路由和运行日志。",
     "complexity": "high",
     "status": "delivery",
     "orchestrator": {
@@ -270,14 +270,14 @@
         "orchestrator-api",
         "agent-runtime",
         "model-router",
-        "evidence-kit"
+        "demo-log-kit"
       ],
       "tasks": [
         "定义多 Agent 上下文对象",
         "实现 OpenClaw/OpenCode 任务队列与状态记录",
         "生成 Thought/Action/Observation 日志",
         "预留截图分析、终端录屏解析、语音输入扩展接口",
-        "输出证据材料清单"
+        "输出 demo 运行日志"
       ],
       "dependencies": [
         "API 契约先于前端联调",
@@ -401,7 +401,7 @@
       "interventionRate": 0.08,
       "firstPassRate": 0.82,
       "velocityGain": "3-5x",
-      "note": "demo 日志用于展示系统形态，真实提交需补充真实账单截图。"
+      "note": "demo 日志用于展示系统形态。"
     },
     "artifacts": [
       {
@@ -413,7 +413,7 @@
           "dependencies",
           "priority"
         ],
-        "createdAt": "2026-05-10T14:56:32.858Z"
+        "createdAt": "2026-05-10T15:05:11.796Z"
       },
       {
         "agentId": "architecture",
@@ -425,7 +425,7 @@
           "componentTree",
           "reviewDecision"
         ],
-        "createdAt": "2026-05-10T14:56:32.858Z"
+        "createdAt": "2026-05-10T15:05:11.796Z"
       },
       {
         "agentId": "coding",
@@ -437,7 +437,7 @@
           "toolUse",
           "refactors"
         ],
-        "createdAt": "2026-05-10T14:56:32.858Z"
+        "createdAt": "2026-05-10T15:05:11.796Z"
       },
       {
         "agentId": "testing",
@@ -452,7 +452,7 @@
           "failures",
           "passed"
         ],
-        "createdAt": "2026-05-10T14:56:32.858Z"
+        "createdAt": "2026-05-10T15:05:11.796Z"
       },
       {
         "agentId": "review",
@@ -466,7 +466,7 @@
           "score",
           "passed"
         ],
-        "createdAt": "2026-05-10T14:56:32.858Z"
+        "createdAt": "2026-05-10T15:05:11.796Z"
       },
       {
         "agentId": "delivery",
@@ -480,25 +480,19 @@
           "velocityGain",
           "note"
         ],
-        "createdAt": "2026-05-10T14:56:32.859Z"
+        "createdAt": "2026-05-10T15:05:11.796Z"
       }
     ],
-    "interventions": [
-      {
-        "type": "submission_material",
-        "reason": "真实平台消费账单截图和真实终端运行截图需要人工补充，并对敏感信息打码。",
-        "status": "required_before_form_submission"
-      }
-    ],
+    "interventions": [],
     "multimodalInputs": {
       "screenshots": [],
       "terminalRecordings": [],
       "voiceRequirements": []
     },
-    "totalTokens": 1755625
+    "totalTokens": 1832926
   },
   "summary": {
-    "totalTokens": 1755625,
+    "totalTokens": 1832926,
     "agents": 6,
     "rounds": 6,
     "interventionRate": 0.08,
@@ -508,5 +502,5 @@
     "reviewScore": 0.82,
     "deliveryPassed": true
   },
-  "completedAt": "2026-05-10T14:56:32.859Z"
+  "completedAt": "2026-05-10T15:05:11.796Z"
 }

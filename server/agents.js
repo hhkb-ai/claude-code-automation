@@ -26,9 +26,9 @@ export const prototypeStructure = [
     responsibility: "负责队列管理、上下文传递、执行状态监控、异常回滚与人工介入点记录。",
   },
   {
-    name: "Evidence Kit",
-    type: "submission material",
-    responsibility: "生成 demo 运行日志和证明材料清单，辅助准备 Thought → Action → Observation 截图。",
+    name: "Demo Log Kit",
+    type: "workflow log",
+    responsibility: "生成 demo 运行日志，用于展示 Thought → Action → Observation 工作流形态。",
   },
 ];
 

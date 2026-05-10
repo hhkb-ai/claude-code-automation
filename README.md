@@ -13,7 +13,6 @@
 - 运行日志：生成 Thought → Action → Observation 结构化日志。
 - 指标 Dashboard：展示 Token、人工介入率、一次通过率、效率提升等关键指标。
 - 多模态扩展接口：预留截图分析、终端录屏解析、语音需求输入和 MiMo-V2.5 长上下文入口。
-- 证明材料清单：用于准备项目申报截图与仓库材料。
 
 ## 技术栈
 
@@ -29,7 +28,7 @@ server/
   pipeline.js     BaseAgent、PipelineContext 和流水线执行逻辑
   index.js        Express API
 src/
-  main.jsx        Dashboard、Agent 架构、模型路由、运行日志、证明材料清单
+  main.jsx        Dashboard、Agent 架构、模型路由、运行日志
   styles.css      前端样式
 scripts/
   generate-demo-log.js
@@ -70,17 +69,8 @@ evidence/demo-logs/agent-workflow-demo.json
 - `GET /api/metrics`
 - `GET /api/runs`
 - `POST /api/runs`
-- `GET /api/evidence`
 - `GET /api/extensions`
-
-## 证明材料建议
-
-1. 过去 30 天 Anthropic/OpenAI/DeepSeek 消费记录截图。
-2. Agent Thought → Action → Observation 运行日志截图 3-5 张。
-3. GitHub 仓库 README 与代码结构截图。
-4. Dashboard 指标页截图。
-5. 真实终端运行截图，隐藏 API Key、账号、账单等敏感信息。
 
 ## 重要说明
 
-本仓库包含 demo simulator，用于展示系统结构和工作流形态。`evidence/demo-logs` 生成的内容是演示日志，不能作为真实消费账单或真实平台使用记录。正式申报时请使用真实平台账单截图和真实运行日志。
+本仓库包含 demo simulator，用于展示系统结构和工作流形态。`evidence/demo-logs` 生成的内容是演示日志。

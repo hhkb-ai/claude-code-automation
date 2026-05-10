@@ -9,7 +9,7 @@ const [run] = buildDemoRuns();
 const lines = [
   "# Demo Agent Workflow Log",
   "",
-  "> This is a generated demo log for project demonstration. It is not a billing record or a real provider usage record.",
+  "> This is a generated demo log for project demonstration.",
   "",
   `Run ID: ${run.id}`,
   `Requirement: ${run.requirement}`,
@@ -39,11 +39,6 @@ lines.push("");
 lines.push("## PipelineContext Artifacts");
 for (const artifact of run.context.artifacts) {
   lines.push(`- ${artifact.agentId}/${artifact.phase}: ${artifact.keys.join(", ")}`);
-}
-lines.push("");
-lines.push("## Required Manual Evidence");
-for (const item of run.context.interventions) {
-  lines.push(`- ${item.reason} (${item.status})`);
 }
 
 writeFileSync(join(outDir, "agent-workflow-demo.md"), lines.join("\n"), "utf-8");

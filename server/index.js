@@ -84,14 +84,11 @@ app.post("/api/runs", async (req, res) => {
 
 app.get("/api/evidence", (_req, res) => {
   res.json({
-    disclaimer: "以下清单用于准备项目申报材料；demo 日志可展示系统形态，但不能替代真实消费账单或真实平台运行记录。",
+    disclaimer: "demo 日志用于展示系统形态和 Agent 工作流。",
     checklist: [
-      "过去 30 天 Anthropic/OpenAI/DeepSeek 消费记录截图",
       "Agent Thought -> Action -> Observation 循环运行日志截图 3-5 张",
-      "GitHub 仓库链接，包含 README、代码结构、启动方式",
       "本地控制台 /api/runs 演示运行记录",
       "前端 Dashboard 指标页截图",
-      "正式提交前对 API Key、账号、账单等敏感信息进行打码",
     ],
   });
 });

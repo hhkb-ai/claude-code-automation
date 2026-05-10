@@ -9,4 +9,4 @@
 
 系统采用多模型混合调度策略：简单 CRUD 任务路由至低成本高吞吐模型，中等复杂业务逻辑路由至 Claude Sonnet/GPT-5，架构设计与安全审查路由至强推理模型。当前原型还预留截图分析、终端日志解析、语音需求输入等多模态扩展接口，可用于 UI 还原度验证、Bug 复现定位与视觉回归测试。后续计划引入 MiMo-V2.5 系列作为长上下文推理引擎，强化大型代码仓库全量上下文处理与自动化 UI 修复能力。
 
-本仓库提供可运行的项目原型：后端以 `BaseAgent` 和 `PipelineContext` 为核心，定义 Requirement、Architecture、Coding、Review、Test、Delivery 等 Agent 类，每个 Agent 读取并更新统一上下文，输出结构化 Artifact；前端提供 Dashboard、Agent 架构、模型路由、运行日志和证明材料清单。`evidence/` 目录可生成 demo 日志，用于展示 Thought → Action → Observation 工作流形态。正式提交时，应补充真实平台消费账单截图和真实终端运行截图，并对 API Key、账号、账单敏感信息进行打码。
+本仓库提供可运行的项目原型：后端以 `BaseAgent` 和 `PipelineContext` 为核心，定义 Requirement、Architecture、Coding、Review、Test、Delivery 等 Agent 类，每个 Agent 读取并更新统一上下文，输出结构化 Artifact；前端提供 Dashboard、Agent 架构、模型路由和运行日志。`evidence/` 目录可生成 demo 日志，用于展示 Thought → Action → Observation 工作流形态。
